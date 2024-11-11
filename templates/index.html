@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}
+博客主页
+{% endblock %}
+<--! 拼写错误：在 index.html 文件中，你在循环部分写成了 acticles，应该是 articles。这个拼写错误会导致循环内容无法正确显示。 -->
+{% block content %}
+<table border="1">
+    <tr>
+        <th>标题</th>
+        <th>时间</th>
+    </tr>
+    {% for article in  articles %}
+    <tr>
+        <td><a href="/article/{{ article.id }}.html">{{ article.title }}</a></td>
+        <td>{{ article.create_time }}123</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
