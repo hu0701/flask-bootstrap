@@ -76,6 +76,8 @@ class Article(db.Model):
 
 #### 4、前端渲染
 
+`index.html`
+
 ```html
 {% extends 'base.html' %}
 
