@@ -1,5 +1,7 @@
 # 基于Flask的Web应用开发
 
+> 项目来源：
+
 ### 一、应用介绍及Flask安装
 
 ### 二、使用模板
@@ -110,3 +112,107 @@ class Article(db.Model):
 ![image-20241111105913309](image/image-20241111105913309.png)
 
 ![image-20241111105924574](image/image-20241111105924574.png)
+
+
+
+### 四、实现用户登录
+
+#### 1、添加新的模块
+
+`requirements.txt`文件追加模板
+
+```txt
+flask-WTF==1.2.1
+flask-login==0.6.3
+```
+
+#### 2、定义用户表的映射
+
+`modele/user.py`
+
+```python
+from flask_login import UserMixin
+
+from routes import db, login_manager
+from sqlalchemy import Integer, String, BLOB, TIMESTAMP
+from sqlalchemy.orm import Mapped, mapped_column
+
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return db.session.get(User, user_id)
+
+
+class User(db.Model, UserMixin):
+    __tablename__ = 'user'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    username: Mapped[str] = mapped_column(String(128), unique=True, nullable=False)
+    password: Mapped[str] = mapped_column(String(255), nullable=False)
+    fullname: Mapped[str] = mapped_column(String(128), nullable=False)
+    description: Mapped[str] = mapped_column(String(255), nullable=True)
+
+    def check_password_correction(self, attempted_password):
+        return self.password == attempted_password
+
+```
+
+#### 3、增加login_manager的初始化
+
+`routes/__init__.py`
+
+```python
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
+
+app = Flask(__name__,
+            template_folder='../templates',
+            static_folder='../assets',
+            static_url_path='/assets')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqldb://root:root@127.0.0.1/myblog_db'
+app.config['SECRET_KEY'] = 'ec9439cfc6c796ae2029594d'  #初始化配置
+
+db = SQLAlchemy(app)
+login_manager = LoginManager(app)					#初始化实例
+
+from routes import user_routes
+from routes import admin_routes
+```
+
+#### 4、为User类增加对login_manage的支持
+
+`modele/user.py`
+
+```python
+from datetime import datetime
+
+from flask_login import UserMixin
+
+from routes import db, login_manager
+from sqlalchemy import Integer, String, BLOB, TIMESTAMP
+from sqlalchemy.orm import Mapped, mapped_column
+
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return db.session.get(User, user_id)
+
+
+class User(db.Model, UserMixin):
+    __tablename__ = 'user'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    username: Mapped[str] = mapped_column(String(128), unique=True, nullable=False)
+    password: Mapped[str] = mapped_column(String(255), nullable=False)
+    fullname: Mapped[str] = mapped_column(String(128), nullable=False)
+    description: Mapped[str] = mapped_column(String(255), nullable=True)
+
+    def check_password_correction(self, attempted_password):
+        return self.password == attempted_password
+```
+
+
+
+#### 5、编写表单类
+

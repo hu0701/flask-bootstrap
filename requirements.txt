@@ -2,3 +2,6 @@ Flask==3.0.0
 mysqlclient==2.2.0
 SQLAlchemy==2.0.23
 Flask-SQLAlchemy==3.1.1
+flask-WTF==1.2.1
+flask-login==0.6.3
+bcrypt==4.1.1
