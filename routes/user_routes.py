@@ -1,3 +1,5 @@
+from flask_login import logout_user
+
 from forms.login_form import LoginForm
 from routes import app
 from flask import render_template, abort, redirect, flash, url_for
@@ -33,8 +35,11 @@ def login_page():
             flash(f'欢迎{form.username.data}回来',category='success')
             return redirect(url_for('home_page'))
         else:
-            flash(f'用户名或密码错误!',category='error')
+            flash(f'用户名或密码错误!',category='danger')
 
     return render_template('login.html', form=form)
 
-
+@app.route('/logout.html')
+def logout_page():
+    logout_user()
+    return redirect(url_for('home_page'))

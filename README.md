@@ -216,3 +216,263 @@ class User(db.Model, UserMixin):
 
 #### 5、编写表单类
 
+`forms/login_form.py`
+
+```python
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SubmitField
+from wtforms.validators import DataRequired
+
+
+class LoginForm(FlaskForm):
+    username = StringField(label="用户名:", validators=[DataRequired()])
+    password = PasswordField(label="密码:", validators=[DataRequired()])
+    submit = SubmitField(label="登陆")
+```
+
+
+
+#### 6、编写表单页面
+
+`templates/login.html`
+
+```html
+{% extends 'base.html' %}
+{% block title %}
+博客主页
+{% endblock %}
+
+{% block content %}
+<div class="container-xl">
+    <form method="POST" class="form-signin">
+        {{ form.hidden_tag() }}
+        <h1 class="h3 mb-3 font-weight-normal">博客管理员登录</h1>
+
+        {{ form.username.label }}
+        {{ form.username(class="form-control", placeholder="输入用户名") }}
+
+        {{ form.password.label }}
+        {{ form.password(class="form-control", placeholder="输入密码") }}
+
+        <br>
+
+        {{ form.submit(class="btn btn-lg btn-primary btn-block") }}
+    </form>
+</div>
+{% endblock %}
+```
+
+
+
+#### 7、添加路由追踪
+
+`routes/user_route.py`
+
+```python
+······
+@app.route('/login.html', methods=['GET', 'POST'])
+def login_page():
+    form = LoginForm()
+    if form.validate_on_submit():
+        result = UserService().do_login(username=form.username.data, password=form.password.data)
+        if result:
+            flash(f'欢迎{form.username.data}回来',category='success')
+            return redirect(url_for('home_page'))
+        else:
+            flash(f'用户名或密码错误!',category='error')
+
+    return render_template('login.html', form=form)
+```
+
+
+
+#### 	8、完成UserService的登陆支持
+
+`service/user_service`
+
+```python
+from sqlalchemy import Select
+from models.user import User
+from routes import db
+from flask_login import login_user
+
+
+
+class UserService:
+    def do_login(self, username: str, password: str)-> bool:
+        query = Select(User).where(User.username == username)
+        attempted_user = db.session.scalar(query)
+        if attempted_user and attempted_user.check_password_correction(
+            attempted_password=password
+        ):
+            login_user(attempted_user)
+            return True
+        return False
+```
+
+![image-20250303132546948](image/image-20250303132546948.png)![image-20250303132603663](image/image-20250303132603663.png)![image-20250303132616735](image/image-20250303132616735.png)
+
+### 五、登陆错误处理和退出
+
+#### 1、增加显示提示的页面组件
+
+`templates/base.html`
+
+```html
+    {% with messages = get_flashed_messages(with_categories=true) %}
+     {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+```
+
+#### 2、添加路由
+
+`routes/user_routes.py`
+
+```python
+@app.route('/logout.html')
+def logout_page():
+    logout_user()
+    return redirect(url_for('home_page'))
+```
+
+#### 3、显示按钮
+
+`templates/base.html`
+
+```html
+        ·····
+		{% if current_user.is_authenticated %}
+        <ul class="navbar-nav">
+            <li class="nav-item">
+               <a class="nav-link" href="#">发布新文章</a>
+            </li>
+            <li class="nav-item">
+               <a class="nav-link" href="{{ url_for('logout_page') }}">退出</a>
+            </li>
+        </ul>
+        {% else %}
+		·····
+```
+
+![image-20250303143611232](image/image-20250303143611232.png)
+
+![image-20250303143622166](image/image-20250303143622166.png)
+
+![image-20250303143652923](image/image-20250303143652923.png)
+
+![image-20250303143707673](image/image-20250303143707673.png)
+
+### 六、发布文章
+
+#### 1、定义表单类
+
+`forms/article_form.py`
+
+```html
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField, HiddenField, TextAreaField
+from wtforms.validators import DataRequired
+
+
+class ArticleForm(FlaskForm):
+    title = StringField(label="标题:", validators=[DataRequired()])
+    content = TextAreaField(label="内容:", validators=[DataRequired()])
+    submit = SubmitField(label="保持")
+```
+
+
+
+#### 2、定义添加文章表单页面
+
+`templates/editarticle.html`
+
+```html
+{% extends 'base.html' %}
+{% block title %}
+博客主页
+{% endblock %}
+{% block content %}
+<style>
+    .content_height{
+        height: 550px;
+    }
+</style>
+<div class="container-fluid px-4 py-4">
+    <form method="POST" class="form-signin">
+        {{ form.hidden_tag() }}
+        <h1 class="h3 mb-3 font-weight-normal">添加新文章</h1>
+        <br>
+            {{ form.title.label() }}
+            {{ form.title(class="form-control", placeholder="请输入文章标题") }}
+            {{ form.content.label() }}
+            {{ form.content(class="form-control content_height", placeholder="请输入文章内容") }}
+        </br>
+        {{ form.submit(class="btn btn-lg btn-block btn-primary")}}
+    </form>
+</div>
+{% endblock %}
+```
+
+
+
+#### 3、实现添加文章的service方法
+
+`service/article_service.py`
+
+```python
+class ArticleService:
+
+·····
+
+    def create_article(self, article: Article):
+        db.session.add(article)
+        db.session.commit()
+        return article
+```
+
+
+
+#### 4、添加文章的路由处理
+
+`routes/admin_routes.py`
+
+```python
+from flask import render_template, url_for, redirect,flash
+from flask_login import login_required
+
+from forms.article_form import ArticleForm
+from models.article import Article
+from routes import app
+from services.article_service import ArticleService
+
+
+@app.route('/createarticle.html', methods=['GET','POST'])
+@login_required
+def create_article_page():
+    form = ArticleForm()
+    if form.validate_on_submit():
+        new_article = Article()
+        new_article.title = form.title.data
+        new_article.content = form.content.data
+
+        try:
+            ArticleService().create_article(new_article)
+            flash(message=f'发布文章完成', category='success')
+            return redirect(url_for('home_page'))
+        except Exception as error:
+            flash(message=f'发布文章失败: {error}', category='danger')
+
+
+    return render_template(template_name_or_list='editarticle.html', form=form)
+```
+
+
+
+​	
