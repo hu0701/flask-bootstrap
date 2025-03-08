@@ -475,4 +475,256 @@ def create_article_page():
 
 
 
-​	
+### 七、美化主页与修改文章
+
+#### 1、美化主页
+
+`templates/index.html`
+
+```html
+{% extends 'base.html' %}
+
+{% block title %}
+博客主页
+{% endblock %}
+{% block content %}
+<div class="container-xl">
+    <--! 拼写错误：在 index.html 文件中，你在循环部分写成了 acticles，应该是 articles。这个拼写错误会导致循环内容无法正确显示。 -->
+    {% for article in articles %}
+    <div class="card mb-4" style="background-color: #ecf2f9">
+        <div class="card-header">
+            <ul class="nav">
+                <li class="nav-itme me-auto">
+                    <a class="btn fs-5 fw-bold" href="/article/{{ article.id }}.html" >{{ article.title }}</a>
+                </li>
+                {% if current_user.is_authenticated %}
+                <li class="nav-item px-a">
+                    <small class="text-body-secondary">
+                        <a class="btn" href="/editartical/{{ article.id }}.html">编辑</a>
+                    </small>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+        <div class="card-body">
+            <p class="card-text">
+                <a class="btn fs-6" href="/article/{{ article.id }}.html">{{ article.content }}</a>
+            </p>
+            <ul class="nav-item sm-auto">
+                <small class="text-body-secondary">发布时间：{{ article.create_time }}</small>
+            </ul>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+```
+
+![image-20250308230024505](image/image-20250308230024505.png)
+
+
+
+#### 2、编辑文章功能
+
+##### 文章发布错误美化
+
+`route/admin_route.py`
+
+```python
+@app.route('/createarticle.html', methods=['GET','POST'])
+@login_required
+def create_article_page():
+    form = ArticleForm()
+    if form.validate_on_submit():
+        new_article = Article()
+        new_article.title = form.title.data
+        new_article.content = form.content.data
+
+        try:
+            article, error_msg = ArticleService().create_article(new_article)
+            if error_msg:
+                flash(message=f'发布文章错误', category='danger')
+            else:
+                flash(message=f'发布文章完成', category='success')
+                return redirect(url_for('home_page'))
+        except Exception as error:
+            flash(message=f'发布文章失败: {error}', category='danger')
+
+
+    return render_template(template_name_or_list='editarticle.html', form=form)
+```
+
+![image-20250309005028652](image/image-20250309005028652.png)
+
+
+
+##### 文章编辑
+
+`route/admin_route.py`
+
+```python
+····
+# 发布文章
+@app.route('/createarticle.html', methods=['GET','POST'])
+@login_required
+def create_article_page():
+    form = ArticleForm()
+    if form.validate_on_submit():
+        new_article = Article()
+        new_article.title = form.title.data
+        new_article.content = form.content.data
+
+        try:
+            article, error_msg = ArticleService().create_article(new_article)
+            if error_msg:
+                flash(message=f'发布文章错误:{error_msg}', category='danger')
+            else:
+                flash(message=f'发布文章完成', category='success')
+                return redirect(url_for('home_page'))
+        except Exception as error:
+            flash(message=f'发布文章失败: {error}', category='danger')
+
+    return render_template(template_name_or_list='editarticle.html', form=form)
+
+
+
+# 更新文章
+@app.route('/editarticle/<article_id>.html', methods=['GET','POST'])
+@login_required
+def edit_article_page(article_id: str):
+    form = ArticleForm()
+    if request.method == 'GET':
+        try:
+            article = ArticleService().get_article(int(article_id))
+            if not article:
+                flash(message=f'修改的文章不存在', category='danger')
+                return redirect(url_for('home_page'))
+            else:
+                form.title.data = article.title
+                form.content.data = article.content
+        except Exception as ex:
+            flash(massage=f'提取文件失败: {ex}', category='danger')
+            return redirect(url_for('home_page'))
+
+    if form.validate_on_submit():
+        try:
+            updated_article = Article()
+            updated_article.id = int(article_id)
+            updated_article.title = form.title.data
+            updated_article.content = form.content.data
+
+            article, error_msg = ArticleService().update_article(updated_article)
+            if error_msg:
+                flash(message=f'更新文章失败', category='danger')
+            else:
+                flash(message=f'更新文章成功', category='success')
+                return redirect(url_for('home_page'))
+            return redirect(url_for('home_page'))
+        except Exception as error:
+            flash(message=f'发布文章失败: {error}', category='danger')
+
+
+    return render_template(template_name_or_list='editarticle.html', form=form)
+```
+
+`route/admin_service.py`
+
+````python
+····
+	# 发布文章对数据库进行比对
+    def create_article(self, article: Article):
+        query = Select(Article).where(Article.title == article.title)
+        # db.session.scalar和 db.session.execute。这里使用execute 有问题，无法判断是否查询到数据 所以使用scalar
+        exit_article = db.session.scalar(query)
+        if exit_article:
+            return article, '同标题的文章已存在'
+
+        db.session.add(article)
+        db.session.commit()
+        return article, None
+
+    # 更新文章
+    def update_article(self, article: Article):
+        exit_article = db.session.get(Article, article.id)
+        if not exit_article:
+            return article, '文章不存在'
+
+        exit_article.title = article.title
+        exit_article.content = article.content
+        exit_article.update_time = func.now()
+
+        db.session.commit()
+        return article , None
+````
+
+![image-20250309021643838](image/image-20250309021643838.png)
+
+
+
+##### 动态修改编译页面的文章
+
+`route/admin_route.py`
+
+```python
+····
+# 发布文章
+@app.route('/createarticle.html', methods=['GET','POST'])
+@login_required
+def create_article_page():
+·····
+	# 通过传递 is_edit参数判断编辑/更新
+    return render_template(template_name_or_list='editarticle.html', form=form, is_edit=False)
+
+
+
+# 更新文章
+@app.route('/editarticle/<article_id>.html', methods=['GET','POST'])
+@login_required
+def edit_article_page(article_id: str):
+····
+	# 通过传递 is_edit参数判断编辑/更新
+    return render_template(template_name_or_list='editarticle.html', form=form, is_edit=True)
+```
+
+
+
+`templates/editarticle.html`
+
+```html
+{% extends 'base.html' %}
+{% block title %}
+    博客主页-
+    {% if is_edit %}
+        编辑文章
+    {% else %}
+        添加新文章
+    {% endif %}
+{% endblock %}
+{% block content %}
+<style>
+    .content_height{
+        height: 550px;
+    }
+</style>
+<div class="container-fluid px-4 py-4">
+    <form method="POST" class="form-signin">
+        {{ form.hidden_tag() }}
+        <h1 class="h3 mb-3 font-weight-normal">
+            {% if is_edit %}
+                编辑文章
+            {% else %}
+                添加新文章
+            {% endif %}
+            </h1>
+            <br>
+            {{ form.title.label() }}
+            {{ form.title(class="form-control", placeholder="请输入文章标题") }}
+            {{ form.content.label() }}
+            {{ form.content(class="form-control content_height", placeholder="请输入文章内容") }}
+        </br>
+        {{ form.submit(class="btn btn-lg btn-block btn-primary")}}
+    </form>
+</div>
+{% endblock %}
+```
+

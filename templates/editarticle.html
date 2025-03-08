@@ -1,6 +1,12 @@
 {% extends 'base.html' %}
 {% block title %}
-博客主页
+    博客主页-
+    <!--- 通过传递 is_edit参数判断编辑/更新 --->
+    {% if is_edit %}
+        编辑文章
+    {% else %}
+        添加新文章
+    {% endif %}
 {% endblock %}
 {% block content %}
 <style>
@@ -11,8 +17,15 @@
 <div class="container-fluid px-4 py-4">
     <form method="POST" class="form-signin">
         {{ form.hidden_tag() }}
-        <h1 class="h3 mb-3 font-weight-normal">添加新文章</h1>
-        <br>
+        <h1 class="h3 mb-3 font-weight-normal">
+            <!--- 通过传递 is_edit参数判断编辑/更新 渲染出来 --->
+            {% if is_edit %}
+                编辑文章
+            {% else %}
+                添加新文章
+            {% endif %}
+            </h1>
+            <br>
             {{ form.title.label() }}
             {{ form.title(class="form-control", placeholder="请输入文章标题") }}
             {{ form.content.label() }}

@@ -3,7 +3,35 @@
 {% block title %}
 博客主页
 {% endblock %}
-<--! 拼写错误：在 index.html 文件中，你在循环部分写成了 acticles，应该是 articles。这个拼写错误会导致循环内容无法正确显示。 -->
 {% block content %}
 
+<div class="container-xl">
+        <!-- 拼写错误：在 index.html 文件中，你在循环部分写成了 acticles，应该是 articles。这个拼写错误会导致循环内容无法正确显示。 -->
+    {% for article in articles %}
+    <div class="card mb-4" style="background-color: #ecf2f9">
+        <div class="card-header">
+            <ul class="nav">
+                <li class="nav-itme me-auto">
+                    <a class="btn fs-5 fw-bold" href="/article/{{ article.id }}.html" >{{ article.title }}</a>
+                </li>
+                {% if current_user.is_authenticated %}
+                <li class="nav-item px-a">
+                    <small class="text-body-secondary">
+                        <a class="btn" href="/editarticle/{{ article.id }}.html">编辑</a>
+                    </small>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+        <div class="card-body">
+            <p class="card-text">
+                <a class="btn fs-6" href="/article/{{ article.id }}.html">{{ article.content }}</a>
+            </p>
+            <ul class="nav-item sm-auto">
+                <small class="text-body-secondary">发布时间：{{ article.create_time }}</small>
+            </ul>
+        </div>
+    </div>
+    {% endfor %}
+</div>
 {% endblock %}

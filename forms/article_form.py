@@ -6,4 +6,4 @@ from wtforms.validators import DataRequired
 class ArticleForm(FlaskForm):
     title = StringField(label="标题:", validators=[DataRequired()])
     content = TextAreaField(label="内容:", validators=[DataRequired()])
-    submit = SubmitField(label="保持")
+    submit = SubmitField(label="保存")
