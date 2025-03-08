@@ -728,3 +728,5 @@ def edit_article_page(article_id: str):
 {% endblock %}
 ```
 
+![image-20250309023016769](image/image-20250309023016769.png)
+
