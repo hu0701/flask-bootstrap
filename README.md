@@ -648,13 +648,15 @@ def edit_article_page(article_id: str):
         exit_article = db.session.get(Article, article.id)
         if not exit_article:
             return article, '文章不存在'
+        # TODO: 检查同标题文章是否存在
+        qury = Select(Article).where(and_(Article.title == article.title, Article.id != article.id))
+        same_title_article = db.session.scalar(qury)
+        if same_title_article :
+            return article, '更新同标题的文章已存在'
 
         exit_article.title = article.title
         exit_article.content = article.content
         exit_article.update_time = func.now()
-
-        db.session.commit()
-        return article , None
 ````
 
 ![image-20250309021643838](image/image-20250309021643838.png)
@@ -738,3 +740,133 @@ def edit_article_page(article_id: str):
 
 
 
+### 八、删除文章
+
+#### 1、增加删除功能按钮
+
+`templates/index.html`
+
+```html
+            ·····
+				{% if current_user.is_authenticated %}
+            ·····
+                <li  class="nav-item px-1">
+                    <small class="text-body-secondary">
+                        <a class="btn" data-bs-toggle="modal" data-bs-target="#Mdal-DeleteConfirm-{{ article.id }}">删除</a>
+                    </small>
+                </li>
+                {% endif %}
+```
+
+
+
+#### 2、定义删除文章表单类
+
+新增`forms/delete_article_form.py`
+
+```python
+from flask_wtf import FlaskForm
+from wtforms import HiddenField, SubmitField
+from wtforms.validators import DataRequired
+
+
+class DeleteArticleForm(FlaskForm):
+    article_id = HiddenField(validators=[DataRequired()])
+    submit = SubmitField(label='删除')
+```
+
+
+
+#### 3、增加确认删除对话框
+
+新增`templates/includes/article_modals.html`
+
+```html
+<!-- 删除文章确认页 -->
+<div class="modal fade" id="Modal-DeleteConfirm-{{ article.id }}" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <dev class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">{{ article.title }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST">
+                {{ delete_article_form.csrf_token }}
+                {{ delete_article_form.article_id(value=article.id) }}
+                <div class="modal-body">
+                    <h4 class="text-center">确定要删除"{{ article.title }}"吗？</h4>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary">确定</button>
+                </div>
+            </form>
+        </div>
+    </dev>
+</div>
+```
+
+
+
+#### 4、引入确认删除对话框
+
+`templates/index.html`
+
+```html
+<div class="container-xl">
+        <!-- 拼写错误：在 index.html 文件中，你在循环部分写成了 acticles，应该是 articles。这个拼写错误会导致循环内容无法正确显示。 -->
+    {% for article in articles %}
+     <!-- 引入确认删除对话框 --> 
+    {% if current_user.is_authenticated %}
+        {% include 'includes/article_modals.html' %}
+    {% endif %}
+```
+
+
+
+#### 5、在service类中添加删除文章的业务逻辑
+
+`service/article_service.py`
+
+```python
+·······
+	def delete_article(self, article_id: int):
+        article = db.session.get(Article, article_id)
+        if article:
+            db.session.delete(article)
+            db.session.commit()
+            return article, None
+        else:
+            return False, '文章不存在'
+```
+
+
+
+#### 6、路由处理中添加删除逻辑
+
+`routes/user_routes.py`
+
+```python
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/index.html', methods=['GET', 'POST'])
+def home_page():
+    if current_user.is_authenticated:
+        delete_article_form = DeleteArticleForm()
+        if delete_article_form.validate_on_submit():
+            if delete_article_form.validate_on_submit():
+                result, error = ArticleService().delete_article(int(delete_article_form.article_id.data))
+                if result:
+                    flash(message=f'删除文章成功', category='success')
+                    return redirect(url_for('home_page'))
+                else:
+                    flash(message=f'删除文章成功', category='danger')
+
+        articles = ArticleService().get_articles()
+        if current_user.is_authenticated:
+            return render_template(template_name_or_list='index.html', articles=articles, delete_article_form=delete_article_form)
+        return render_template(template_name_or_list='index.html', articles=articles)
+```
+
+![image-20250309234652420](image/image-20250309234652420.png)
+
+![image-20250309234702325](image/image-20250309234702325.png)
