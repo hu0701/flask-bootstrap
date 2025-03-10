@@ -957,34 +957,5 @@ $(function (){
 
 
 
-Git
 
-```git
-$ git status
-On branch master
-Your branch is up to date with 'origin/master'.
-
-Changes to be committed:
-  (use "git restore --staged <file>..." to unstage)
-        new file:   .idea/workspace.xml
-        new file:   assets/js/article.js
-
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git restore <file>..." to discard changes in working directory)
-        modified:   .idea/misc.xml
-        modified:   .idea/myblog.iml
-        modified:   .idea/workspace.xml
-        modified:   README.md
-        modified:   assets/js/article.js
-        modified:   templates/article.html
-        modified:   templates/base.html
-
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-        assets/plugins/showdownjs-2.0.0/
-        image/image-20250310181911220.png
-        image/image-20250310181922805.png
-
-```
 
