@@ -870,3 +870,121 @@ def home_page():
 ![image-20250309234652420](image/image-20250309234652420.png)
 
 ![image-20250309234702325](image/image-20250309234702325.png)
+
+
+
+### 九、引入Markdown来显示文章
+
+#### 1、下载showdownjs
+
+>https://github.com/showdownjs/showdown/tree/master/dist
+>
+>下载 `showdown.min.js` 和 `showdown.min.js.map` 文件夹；放置 `assets/plugins/showdownjs-2.0.0`
+
+
+
+#### 2、引入showdownjs与自定义markdown的一些显示样式
+
+`templates/base.html`
+
+```html
+ 	·····
+	<script src="/assets/plugins/showdownjs-2.0.0/showdown.min.js"></script>
+    <style>
+        pre {
+            white-space: pre-wrap;          /* css-3 */
+            white-space: -moz-pre-wrap;     /* Mozilla, since 1999 */
+            white-space: pre-wrap;          /* Opera 4-6 */
+            white-space: -o-pre-wrap;       /* Opera 7 */
+            word-wrap: break-word;          /* Internet Explorer 5.5+ */
+            background-color: #f8f8f8;
+            border: 1px solid #dfdfdf;
+            margin-top: 1.5em;
+            margin-bottom: 1.5em;
+            padding: 1.25rem 0.3125rem 0.0625rem;
+        }
+
+        pre code {
+            background-color: transparent;
+            border: 0;
+            padding: 0;
+        }
+    </style>
+	·····
+```
+
+
+
+#### 3、调试文章显示页面的内容支持markdown
+
+`templates/article.html`
+
+```html
+{% extends 'base.html' %}
+
+{% block title %}
+博客 -{{ article.title }}
+{% endblock %}
+
+{% block content %}
+<textarea id="article_content" style="display: none;">{{ article.content }}</textarea>
+<div class="container-xl">
+    <h4><p class="text-center" style="margin-top: 20px;">{{ article.title }}</p></h4>
+    <p class="text-center" style="margin-top: 10px;">最后更新： {{ article.update_time }}</p>
+    <p id="article_viewer"></p>
+</div>
+<script src="/assets/js/article.js"></script>"
+{% endblock %}
+```
+
+
+
+#### 4、编写自己的js来使用markdown
+
+`/assets/js/article.js`
+
+```javascript
+$(function (){
+    var converter = new showdown.Converter();
+    var article_html = converter.makeHtml($('#article_content').val())
+    $('#article_content').html(article_html)
+})
+```
+
+![image-20250310181911220](image/image-20250310181911220.png)
+
+![image-20250310181922805](image/image-20250310181922805.png)
+
+
+
+Git
+
+```git
+$ git status
+On branch master
+Your branch is up to date with 'origin/master'.
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        new file:   .idea/workspace.xml
+        new file:   assets/js/article.js
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   .idea/misc.xml
+        modified:   .idea/myblog.iml
+        modified:   .idea/workspace.xml
+        modified:   README.md
+        modified:   assets/js/article.js
+        modified:   templates/article.html
+        modified:   templates/base.html
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        assets/plugins/showdownjs-2.0.0/
+        image/image-20250310181911220.png
+        image/image-20250310181922805.png
+
+```
+
