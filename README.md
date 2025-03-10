@@ -959,3 +959,78 @@ $(function (){
 
 
 
+### 十、编辑时预览文章
+
+#### 1、修改编译页面
+
+`templates/editartcile.html`
+
+```html
+{% extends 'base.html' %}
+{% block title %}
+    博客主页-
+    <!--- 通过传递 is_edit参数判断编辑/更新 --->
+    {% if is_edit %}
+        编辑文章
+    {% else %}
+        添加新文章
+    {% endif %}
+{% endblock %}
+{% block content %}
+<style>
+    .content_height{
+        height: 550px;
+    }
+</style>
+<div class="container-fluid px-4 py-4">
+    <form method="POST" class="form-signin">
+        {{ form.hidden_tag() }}
+        <h1 class="h3 mb-3 font-weight-normal">
+            <!--- 通过传递 is_edit参数判断编辑/更新 渲染出来 --->
+            {% if is_edit %}
+                编辑文章
+            {% else %}
+                添加新文章
+            {% endif %}
+            </h1>
+            <br>
+            {{ form.title.label() }}
+            {{ form.title(class="form-control", placeholder="请输入文章标题") }}
+            <div class="row">
+                <div class="col">
+                    {{ form.content.label() }}
+                    {{ form.content(class="form-control content_height", placeholder="请输入文章内容") }}
+                     </br>
+                    {{ form.submit(class="btn btn-lg btn-block btn-primary")}}
+                    <a href="#" id="article_preview_btn" class="btn btn-lg btn-block btn-primary">预览</a>
+                </div>
+                <div class="col">
+                    文章内容:
+                    <div class="container-fluid border border-success">
+                        <div id="article_preview" class="content_height" style="overflow: auto"></div>
+                    </div>
+                </div>
+            </div>
+    </form>
+</div>
+<script src="/assets/js/editarticle.js"></script>
+{% endblock %}
+
+```
+
+
+
+#### 2、编写js来渲染markdown
+
+`/assets/js/editarticle.js`
+
+```javascript
+$(function (){
+    $('#article_preview_btn').click(function (){
+        var converter = new showdown.Converter();
+        var content_html = converter.makeHtml($('#content').val());
+        $('#article_preview').html(content_html);
+    });
+});
+```
+

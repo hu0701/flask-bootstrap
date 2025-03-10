@@ -12,19 +12,25 @@
       <change afterPath="$PROJECT_DIR$/../Go-demo/day01/.idea/watcherTasks.xml" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/../Go-demo/day01/go.mod" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/../Go-demo/day01/main.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/js/article.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/js/editarticle.js" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/../python/.idea/python.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/myblog.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/myblog.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/js/article.js" beforeDir="false" afterPath="$PROJECT_DIR$/assets/js/article.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/article.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/article.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/editarticle.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/editarticle.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JavaScript File" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -112,7 +118,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1741599372075</updated>
-      <workItem from="1741599375193" duration="2528000" />
+      <workItem from="1741599375193" duration="6337000" />
     </task>
     <servers />
   </component>
