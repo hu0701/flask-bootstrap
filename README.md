@@ -1035,3 +1035,54 @@ $(function (){
 ```
 
 ![image-20250310200113170](image/image-20250310200113170.png)
+
+
+
+### 十一、消除明文密码
+
+> 使用 `bcrypt ` 做加密： https://pypi.org/project/bcrypt/
+
+#### 1、安装 `brcypt` 模块
+
+```bash
+$ pip install bcrypt
+```
+
+`requirements.txt`
+
+```python
+Flask==3.0.0
+mysqlclient==2.2.0
+SQLAlchemy==2.0.23
+Flask-SQLAlchemy==3.1.1
+flask-WTF==1.2.1
+flask-login==0.6.3
+bcrypt==4.1.1
+```
+
+#### 2、修改数据库明文密码
+
+```python
+>>> import bcrypt
+>>> pd='admin'
+>>> hashed = bcrypt.hashpw(pd.encode(), bcrypt.gensalt())
+>>> print(hashed.decode('utf-8'))
+$2b$12$U3PhlQenadR1WCb63.1Rxu83TrnFxv884YpPOPjYZI0wzbl.oG4Iq
+```
+
+![image-20250311141545051](image/image-20250311141545051.png)
+
+
+
+#### 3、修改认证方式
+
+```python
+	·····
+    def check_password_correction(self, attempted_password):
+        password_hashed = self.password.encode()
+        return bcrypt.checkpw(attempted_password.encode(), password_hashed)    
+```
+
+登录免密已然是admin/admin ， 但数据存储的密码以及h加密了成字符串了
+
+![image-20250311141825473](image/image-20250311141825473.png)

@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import bcrypt
 from flask_login import UserMixin
 
 from routes import db, login_manager
@@ -22,5 +23,6 @@ class User(db.Model, UserMixin):
     description: Mapped[str] = mapped_column(String(255), nullable=True)
 
     def check_password_correction(self, attempted_password):
-        return self.password == attempted_password
+        password_hashed = self.password.encode()
+        return bcrypt.checkpw(attempted_password.encode(), password_hashed)
 
