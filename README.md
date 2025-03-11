@@ -1340,3 +1340,170 @@ def images_page():
 
 
 ![image-20250311215048219](image/image-20250311215048219.png)
+
+
+
+### 十四、实现Docker部署
+
+#### 1、代码改造
+
+`main.py` 主文件
+
+```python
+import bcrypt
+from sqlalchemy import inspect
+from routes import app, db
+
+
+def init_db():
+    with app.app_context():
+        inspector = inspect(db.engine)
+        if not inspector.has_table('users'):
+            from models.user import User
+            from models.article import Article
+            db.create_all()
+            password_hashed = bcrypt.hashpw('admin'.encode(), bcrypt.gensalt())
+            user = User(username="root", password=password_hashed.decode('utf-8'), fullname='root', description='')
+            db.session.add(user)
+            db.session.commit()
+
+
+if __name__ == '__main__':
+    init_db()
+    app.run(host='0.0.0.0', debug=True, port=8080)
+```
+
+
+
+数据库连接方式
+
+`route/__init__.py`
+
+```python
+import os
+
+from flask import Flask
+from flask_login import LoginManager
+from flask_sqlalchemy import SQLAlchemy
+
+
+MYSQL_HOST = os.getenv("MYSQL_HOST", "localhost")
+MYSQL_PORT = os.getenv("MYSQL_PORT", "3306")
+MYSQL_USER = os.getenv("MYSQL_USER", "root")
+MYSQL_PWD = os.getenv("MYSQL_PWD", "test")
+MYSQL_DB = os.getenv("MYSQL_DB", "testdb")
+
+
+app = Flask(__name__,
+            template_folder='../templates',
+            static_folder='../assets',
+            static_url_path='/assets')
+app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+mysqldb://{MYSQL_USER}:{MYSQL_PWD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}'
+app.config['SECRET_KEY'] = 'ec9439cfc6c796ae2029594d'
+
+db = SQLAlchemy(app)
+login_manager = LoginManager(app)
+
+
+from routes import user_routes
+from routes import admin_routes
+```
+
+
+
+#### 2、Dockerfile编写
+
+`/Dockerfile`
+
+```dockerfile
+FROM ubuntu
+
+COPY . /opt/myblog/
+
+WORKDIR /opt/myblog/
+
+RUN apt-get update
+RUN apt-get install -y python3.9 python3-pip
+RUN apt-get install -y pkg-config
+RUN apt-get install -y libmysqlclient-dev
+
+RUN pip3 install --upgrade pip
+RUN pip3 install -r requirements.txt
+
+ENV PYTHONPATH=/opt/myblog/
+
+ENTRYPOINT ["python3", "main.py"]
+```
+
+
+
+#### 3、docker-compose.yaml编写
+
+```commonlisp
+version: '3.8'
+services:
+  myblog_server:
+    build: .
+    image: myblog
+    container_name: myblog_server
+    ports:
+      - "80:8080"
+    links:
+      - mysql_server
+    environment:
+      MYSQL_HOST: mysql_server
+      MYSQL_DB: myblog_db
+      MYSQL_USER: root
+      MYSQL_PWD: nevertellyou
+    volumes:
+      - /opt/myblog_data:/opt/myblog/data
+    depends_on:
+      mysql_server:
+          condition: service_healthy
+
+  mysql_server:
+    image: mysql:8.0
+    container_name: mysql_server
+    volumes:
+      - /opt/mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: nevertellyou
+      MYSQL_DATABASE: myblog_db
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+```
+
+
+
+目录结构
+
+```bash
+$ tree
+├─assets
+│  ├─js
+│  └─plugins
+│      ├─bootstrap-5.3.2
+│      ├─jquery-3.7.1
+│      └─showdownjs-2.0.0
+├─common
+├─data
+├─forms
+├─image
+├─models
+├─routes
+├─services
+├─templates
+└─venv
+    ├─Lib
+    │  └─site-packages
+    │      ├─greenlet
+    │      ├─markupsafe
+    │      ├─MySQLdb
+    │      └─sqlalchemy
+    │          └─cyextension
+    └─Scripts
+
+```
+
