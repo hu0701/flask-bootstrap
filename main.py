@@ -11,7 +11,8 @@ def init_db():
             from models.article import Article
             db.create_all()
             password_hashed = bcrypt.hashpw('admin'.encode(), bcrypt.gensalt())
-            user = User(username="root", password=password_hashed.decode('utf-8'), fullname='root', description='')
+            user = User(username="admin", password=password_hashed.decode('utf-8'), fullname='root', description='')
+
             db.session.add(user)
             db.session.commit()
 

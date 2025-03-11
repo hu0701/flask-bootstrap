@@ -1,6 +1,12 @@
 # 基于Flask的Web应用开发
 
-> 项目来源：
+> 项目来源：[【基于Flask的Web应用开发-01.应用介绍及Flask安装_s】](【基于Flask的Web应用开发-01.应用介绍及Flask安装_s】 https://www.bilibili.com/video/BV1r94y1j7uW/?share_source=copy_web&vd_source=d0886da49a29063777f2956d5780b087)
+>
+> 原作者首页： http://hifengge.com/index.html
+>
+> 我的代码仓库：https://github.com/hu0701/flask-bootstrap.git
+>
+> 记录学习flask笔记代码
 
 ### 一、应用介绍及Flask安装
 
@@ -1476,6 +1482,24 @@ services:
 ```
 
 
+
+
+
+# 最终效果
+
+![image-20250312004401927](image/image-20250312004401927.png)
+
+![image-20250312004422496](image/image-20250312004422496.png)
+
+![image-20250312004519312](image/image-20250312004519312.png)
+
+![image-20250312004530238](image/image-20250312004530238.png)
+
+
+
+![image-20250312004541960](image/image-20250312004541960.png)
+
+![image-20250312004601238](image/image-20250312004601238.png)
 
 
 
