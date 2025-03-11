@@ -18,7 +18,7 @@ def get_save_filepaths(file_path: Path, filename: str):
 
     name, ext = get_file_name_parts(filename)
     for index in range(1, 100):
-        save_file = file_path.joinpath(f'{name}_{index}.{ext}')
+        save_file = file_path.joinpath(f'{name}{index}.{ext}')
         if not save_file.exists():
             return save_file
 

@@ -16,5 +16,18 @@
          <br>
         {{ form.submit(class="btn btn-lg btn-primary btn-primary") }}
     </form>
+    <hr/>
+    <div class="row">
+        {% if image_filenames %}
+            {% for image_file in image_filenames %}
+                <div class="col-md-3">
+                    <b>/image/{{ image_file }}</b>
+                    <img src="/image/{{ image_file }}" class="img-thumbnail my-2" style="width: 300px;" height="200px;"/>
+                        <a href="/image/{{ image_file }}" class="btn btn-primary">查看</a>
+                        <a class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#Modal-DeleteConfirm-{{ image_file }}">删除</a>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

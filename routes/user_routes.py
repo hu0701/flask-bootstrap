@@ -1,9 +1,10 @@
 from flask_login import logout_user, current_user
 
+from common.profile import Profile
 from forms.delete_article_form import DeleteArticleForm
 from forms.login_form import LoginForm
 from routes import app
-from flask import render_template, abort, redirect, flash, url_for
+from flask import render_template, abort, redirect, flash, url_for, send_from_directory
 from services.article_service import ArticleService
 from services.user_service import UserService
 
@@ -22,10 +23,11 @@ def home_page():
                 else:
                     flash(message=f'删除文章成功', category='danger')
 
-# 修改未登录时，显示index.html主页
+    # 修改未登录时，显示index.html主页
     articles = ArticleService().get_articles()
     if current_user.is_authenticated:
-        return render_template(template_name_or_list='index.html', articles=articles, delete_article_form=delete_article_form)
+        return render_template(template_name_or_list='index.html', articles=articles,
+                               delete_article_form=delete_article_form)
     return render_template(template_name_or_list='index.html', articles=articles)
 
 
@@ -48,10 +50,10 @@ def login_page():
     if form.validate_on_submit():
         result = UserService().do_login(username=form.username.data, password=form.password.data)
         if result:
-            flash(f'欢迎{form.username.data}回来',category='success')
+            flash(f'欢迎{form.username.data}回来', category='success')
             return redirect(url_for('home_page'))
         else:
-            flash(f'用户名或密码错误!',category='danger')
+            flash(f'用户名或密码错误!', category='danger')
 
     return render_template('login.html', form=form)
 
@@ -60,3 +62,13 @@ def login_page():
 def logout_page():
     logout_user()
     return redirect(url_for('home_page'))
+
+
+@app.route('/image/<image_filename>')
+def download_image(image_filename: str):
+    image_path = Profile.get_images_path()
+    image_filepath = image_path.joinpath(image_filename)
+    if not image_filepath:
+        return abort(404)
+
+    return send_from_directory(directory=image_path, path=image_filename)

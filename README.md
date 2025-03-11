@@ -1224,3 +1224,119 @@ def images_page():
 
 
 ### 十三、实现图片下载
+
+#### 1、导航栏添加“图片管理”
+
+`templates/base.html`
+
+```html
+    ····· 
+	   {% if current_user.is_authenticated %}
+        <ul class="navbar-nav">
+           <!--添加图片管理-->
+           <li class="nav-item">
+               <a class="nav-link" href="{{ url_for('images_page') }}">图片管理</a>
+            </li>
+            <li class="nav-item">
+               <a class="nav-link" href="{{ url_for('create_article_page') }}">发布新文章</a>
+            </li>
+            <li class="nav-item">
+               <a class="nav-link" href="{{ url_for('logout_page') }}">退出</a>
+            </li>
+        </ul>
+        {% else %}
+	······
+```
+
+
+
+#### 2、访问服务端图片
+
+`routes/user_routes.py`
+
+```python
+·····
+@app.route('/image/<image_filename>')
+def download_image(image_filename: str):
+    image_path = Profile.get_images_path()
+    image_filepath = image_path.joinpath(image_filename)
+    if not image_filepath:
+        return abort(404)
+
+    return send_from_directory(directory=image_filepath, path=image_filename)
+```
+
+
+
+新增 `service/image_service.py`
+
+```python
+from common.profile import Profile
+
+
+class ImageService:
+    def get_image_filename_list(self):
+        image_paht = Profile.get_images_path()
+
+        filename_list = []
+
+        if image_paht.exists():
+            for item in image_paht.iterdir():
+                if item.is_file():
+                    filename_list.append(item.name)
+
+        return filename_list
+```
+
+
+
+#### 3、图片展示
+
+`routes/admin_routes.py`
+
+```python
+@app.route('/images.html', methods=['GET', 'POST'])
+@login_required
+def images_page():
+    form = ImageUploadForm()
+
+    if form.validate_on_submit():
+        image_file = form.image_file.data
+
+        images_path = Profile.get_images_path()
+        image_filename = secure_filename(image_file.filename)
+        image_fullpath = utils.get_save_filepaths(images_path, image_filename)
+
+        image_file.save(image_fullpath)
+        flash(message=f'上传图片成功: {image_fullpath}', category='success')
+
+    image_filenames = ImageService().get_image_filename_list()
+
+    return render_template(template_name_or_list='images.html', form=form, image_filenames=image_filenames)
+```
+
+
+
+`templates/images.html`
+
+```html
+    <hr/>
+    <div class="row">
+        {% if image_filenames %}
+            {% for image_file in image_filenames %}
+                <div class="col-md-3">
+                    <b>/image/{{ image_file }}</b>
+                    <img src="/image/{{ image_file }}" class="img-thumbnail my-2" style="width: 300px;" height="200px;"/>
+                        <a href="/image/{{ image_file }}" class="btn btn-primary">查看</a>
+                        <a class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#Modal-DeleteConfirm-{{ image_file }}">删除</a>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+```
+
+![image-20250311215004569](image/image-20250311215004569.png)
+
+
+
+![image-20250311215048219](image/image-20250311215048219.png)
