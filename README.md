@@ -1477,33 +1477,5 @@ services:
 
 
 
-目录结构
 
-```bash
-$ tree
-├─assets
-│  ├─js
-│  └─plugins
-│      ├─bootstrap-5.3.2
-│      ├─jquery-3.7.1
-│      └─showdownjs-2.0.0
-├─common
-├─data
-├─forms
-├─image
-├─models
-├─routes
-├─services
-├─templates
-└─venv
-    ├─Lib
-    │  └─site-packages
-    │      ├─greenlet
-    │      ├─markupsafe
-    │      ├─MySQLdb
-    │      └─sqlalchemy
-    │          └─cyextension
-    └─Scripts
-
-```
 
