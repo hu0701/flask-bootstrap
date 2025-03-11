@@ -22,10 +22,12 @@ def home_page():
                 else:
                     flash(message=f'删除文章成功', category='danger')
 
-        articles = ArticleService().get_articles()
-        if current_user.is_authenticated:
-            return render_template(template_name_or_list='index.html', articles=articles, delete_article_form=delete_article_form)
-        return render_template(template_name_or_list='index.html', articles=articles)
+# 修改未登录时，显示index.html主页
+    articles = ArticleService().get_articles()
+    if current_user.is_authenticated:
+        return render_template(template_name_or_list='index.html', articles=articles, delete_article_form=delete_article_form)
+    return render_template(template_name_or_list='index.html', articles=articles)
+
 
 @app.route('/article/<article_id>.html')
 def article_page(article_id):
@@ -33,6 +35,7 @@ def article_page(article_id):
     if article:
         return render_template('article.html', article=article)
     abort(404)
+
 
 @app.route('/about.html')
 def about_page():
@@ -51,6 +54,7 @@ def login_page():
             flash(f'用户名或密码错误!',category='danger')
 
     return render_template('login.html', form=form)
+
 
 @app.route('/logout.html')
 def logout_page():
