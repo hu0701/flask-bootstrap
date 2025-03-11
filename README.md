@@ -1086,3 +1086,141 @@ $2b$12$U3PhlQenadR1WCb63.1Rxu83TrnFxv884YpPOPjYZI0wzbl.oG4Iq
 登录免密已然是admin/admin ， 但数据存储的密码以及h加密了成字符串了
 
 ![image-20250311141825473](image/image-20250311141825473.png)
+
+
+
+### 十二、实现图片上传
+
+#### 1、上传页
+
+ `forms/image_upload_form.py`
+
+```python
+from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileRequired
+from wtforms import SubmitField
+
+
+class ImageUploadForm(FlaskForm):
+    image_file = FileField(label="选择图片", validators=[FileRequired()])
+    submit = SubmitField(label="上传")
+```
+
+`templates/images.html`
+
+```html
+{% extends 'base.html' %}
+{% block title %}
+博客主页
+{% endblock %}
+
+{% block content %}
+<div class="container-xl">
+    <form method="POST" class="form-signin" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <h1 class="h3 mb-3 font-weight-normal">
+            上传页面
+        </h1>
+        <br>
+        {{ form.image_file.label }}
+        {{ form.image_file(class="form-control") }}
+         <br>
+        {{ form.submit(class="btn btn-lg btn-primary btn-primary") }}
+    </form>
+</div>
+{% endblock %}
+
+```
+
+
+
+#### 2、工具类
+
+`commom/profile.py`
+
+>  定义了一个Profile类，用于获取图像文件的路径。
+
+```python
+from pathlib import Path
+
+
+class Profile:
+    __images_path = None
+
+    @staticmethod
+    def get_images_path():
+        home_path = Path(__file__).parent.parent
+
+        images_path = home_path.joinpath("data/images")
+        if not images_path.exists():
+            images_path.mkdir(parents=True)
+
+        return images_path
+```
+
+`common/utils.py`
+
+> 获取文件名和扩展名，并生成唯一的保存文件路径。
+
+```python
+from pathlib import Path
+
+
+def get_file_name_parts( filename: str):
+    pos = filename.rfind('.')
+    if pos == -1:
+        return filename, ''
+
+    return filename[:pos], filename[pos + 1:]
+
+
+def get_save_filepaths(file_path: Path, filename: str):
+    save_file = file_path.joinpath(filename)
+    if not save_file.exists():
+        return save_file
+
+    name, ext = get_file_name_parts(filename)
+    for index in range(1, 100):
+        save_file = file_path.joinpath(f'{name}_{index}.{ext}')
+        if not save_file.exists():
+            return save_file
+
+    return file_path.joinpath(f'{name}_override.{ext}')
+```
+
+
+
+#### 3、路由上传页面
+
+`routes/admin_routes.py`
+
+```python
+	·····
+
+@app.route('/images.html', methods=['GET', 'POST'])
+@login_required
+def images_page():
+    form = ImageUploadForm()
+
+    if form.validate_on_submit():
+        image_file = form.image_file.data
+
+        images_path = Profile.get_images_path()
+        image_filename = secure_filename(image_file.filename)
+        image_fullpath = utils.get_save_filepaths(images_path, image_filename)
+
+        image_file.save(image_fullpath)
+        flash(message=f'上传图片成功: {image_fullpath}', category='success')
+
+    return render_template(template_name_or_list='images.html', form=form)
+```
+
+
+
+![image-20250311182909688](image/image-20250311182909688.png)
+
+![image-20250311183512961](image/image-20250311183512961.png)
+
+
+
+### 十三、实现图片下载
